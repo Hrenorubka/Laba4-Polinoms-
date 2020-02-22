@@ -3,55 +3,28 @@
 #define __LIST_H__
 
 template <class ValType>
+struct Node
+{
+	ValType val;
+	Node<ValType> *node;
+	Node()
+	{
+		node = NULL;
+	}
+	Node(ValType tmp)
+	{
+		val = tmp;
+		node = NULL;
+	}
+};
+
+template <class ValType>
 class List
 {
 protected:
 	Node<ValType> *head_node;
 	int size;
 public:
-	class Iterator
-	{
-	private:
-		Node<ValType> *current_node;
-	public:
-		Iterator()
-		{
-			current_node = NULL;
-
-		}
-		Iterator(Node<ValType> *obl)
-		{
-			current_node = obl;
-		}
-		Iterator(const Iterator &cop_iter)
-		{
-			current_node = cop_iter.current_node;
-		}
-		Iterator operator=(const Iterator &inp_iter)
-		{
-			current_node = inp_iter.current_node;
-			return *this;
-		}
-		Iterator operator++(int)
-		{
-			if (current_node == NULL)
-				throw 1;
-			Iterator obl(*this);
-			current_node = current_node->node;
-			return obl;
-		}
-		Iterator operator++()
-		{
-			if ((current_node->node == NULL) || (current_node == NULL))
-				throw 1;
-			current_node = current_node->node;
-			return *this;
-		}
-		ValType operator*()
-		{
-			return current_node->val;
-		}
-	};
 	List()
 	{
 		head_node = NULL;
@@ -105,30 +78,6 @@ public:
 		obl->node->node = NULL;
 		size++;
 	}
-	void insert(ValType val, int pos)
-	{
-		if ((pos > size) || (pos < 0))
-			throw 1;
-		if (pos == 0)
-		{
-			push_front(val);
-			return;
-		}
-		int i = 0;
-		pos--;
-		Node<ValType> *step = head_node;
-		while (i < pos)
-		{
-			if (step == NULL)
-				throw 1;
-			step = step->node;
-			i++;
-		}
-		Node<ValType> *obl_node = new Node<ValType>(val);
-		obl_node->node = step->node;
-		step->node = obl_node;
-		size++;
-	}
 	void insert(Node<ValType> *prev, ValType val)
 	{
 		Node<ValType> *obl = new Node<ValType>();
@@ -163,31 +112,6 @@ public:
 		head_node = step_head;
 		size--;
 	}
-	void remove(int pos)
-	{
-		if ((pos < 0) || (pos > size))
-			throw 1;
-		if (pos == 0)
-		{
-			pop_front();
-			return;
-		}
-		Node<ValType> *obl_head = head_node;
-		int i = 0;
-		pos--;
-		while (i < pos)
-		{
-			if (head_node->node->node == NULL)
-				throw 1;
-			head_node = head_node->node;
-			i++;
-		}
-		Node<ValType> *obl_step = head_node->node->node;
-		delete head_node->node;
-		head_node->node = obl_step;
-		head_node = obl_head;
-		size--;
-	}
 	void remove(Node<ValType> *prev)
 	{
 		if (prev->node == NULL)
@@ -197,7 +121,7 @@ public:
 		prev->node = obl;
 		size--;
 	}
-	ValType find(int pos)
+	virtual ValType find(int pos)
 	{
 		Node<ValType> *obl_step = head_node;
 		int i = 0;
@@ -220,18 +144,17 @@ public:
 			step_head = step_head->node;
 		}
 	}
-	Iterator begin()
-	{
-		Iterator obl(head_node);
-		return obl;
-	}
 	int get_size()
 	{
 		return size;
 	}
 	bool empty()
 	{
-		return size;
+		return !size;
+	}
+	Node<ValType>* get_head()
+	{
+		return *head_node;
 	}
 };
 #endif
