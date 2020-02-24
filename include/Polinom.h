@@ -30,7 +30,8 @@ struct Power
 	Power(int inp_x, int inp_y, int inp_z)
 	{
 		if ((inp_x > 9) || (inp_x < 0) || (inp_y > 9) || (inp_y < 0) || (inp_z > 9) || (inp_z < 0))
-			xyz = inp_x * 100 + inp_y * 10 + inp_z;
+			throw 1;
+		xyz = inp_x * 100 + inp_y * 10 + inp_z;
 	}
 	Power(int inp_xyz)
 	{
@@ -44,45 +45,31 @@ struct Power
 	}
 	bool operator<(Power &inp)
 	{
-		if (xyz < inp.xyz)
-			return true;
-		return false;
+		return (xyz < inp.xyz);
 	}
 	bool operator>(Power &inp)
 	{
-		if (xyz > inp.xyz)
-			return true;
-		return false;
+		return (xyz > inp.xyz);	
 	}
 	bool operator<=(Power &inp)
 	{
-		if (xyz <= inp.xyz)
-			return true;
-		return false;
+		return (xyz <= inp.xyz);
 	}
 	bool operator>=(Power &inp)
 	{
-		if (xyz >= inp.xyz)
-			return true;
-		return false;
+		return (xyz >= inp.xyz);
 	}
 	bool operator!=(Power &inp)
 	{
-		if (xyz != inp.xyz)
-			return true;
-		return false;
+		return (xyz != inp.xyz);
 	}
 	bool operator==(Power &inp)
 	{
-		if (xyz == inp.xyz)
-			return true;
-		return false;
+		return (xyz == inp.xyz);
 	}
 	bool operator==(int inp)
 	{
-		if (xyz == inp)
-			return true;
-		return false;
+		return (xyz == inp);
 	}
 	Power& operator=(Power inp)
 	{
@@ -153,27 +140,19 @@ struct Monom
 	}
 	bool operator<(Monom &comp)
 	{
-		if (power < comp.power)
-			return true;
-		return false;
+		return (power < comp.power);
 	}
 	bool operator>(Monom &comp)
 	{
-		if (power > comp.power)
-			return true;
-		return false;
+		return (power > comp.power);
 	}
 	bool operator<=(Monom &comp)
 	{
-		if (power <= comp.power)
-			return true;
-		return false;
+		return (power <= comp.power);
 	}
 	bool operator>=(Monom &comp)
 	{
-		if (power >= comp.power)
-			return true;
-		return false;
+		return (power >= comp.power);
 	}
 	Monom &operator=(Monom inp)
 	{
@@ -380,6 +359,13 @@ private:
 		obl->node = inp_node;
 		size++;
 	}
+	void push_back(Monom &val, Node<Monom> *last)
+	{
+		Node<Monom> *inp_node = new Node<Monom>(val);
+		inp_node->node = last->node;
+		last->node = inp_node;
+		size++;
+	}
 public:
 	Polinom() : List()
 	{
@@ -521,53 +507,49 @@ public:
 	Polinom operator+(const Polinom &p)
 	{
 		Polinom sum;
-		bool fl = true;
+		Node<Monom> *last_node_sum = sum.head_node;
 		Node<Monom> *step_first = head_node->node;
 		Node<Monom> *step_second = p.head_node->node;
-		while (fl)
+		while ((step_first != head_node) && (step_second != p.head_node))
 		{
-			while ((step_first != head_node) && (step_first->val.power != step_second->val.power) && (step_first->val.power < step_second->val.power))
+			if (step_first->val.power == step_second->val.power)
 			{
-				sum.push(step_first->val);
-				step_first = step_first->node;
-			}
-			while ((step_second != p.head_node) && (step_second->val.power != step_first->val.power) && (step_second->val.power < step_first->val.power))
-			{
-				sum.push(step_second->val);
-				step_second = step_second->node;
-			}
-			if ((step_first != head_node) && (step_second != p.head_node))
-			{
-				if (step_first->val.coef + step_second->val.coef != 0)
+				Monom obl;
+				obl.coef = step_first->val.coef + step_second->val.coef;
+				if (obl.coef != 0)
 				{
-					Monom obl_sum;
-					obl_sum.power = step_first->val.power;
-					obl_sum.coef = step_first->val.coef + step_second->val.coef;
-					sum.push(obl_sum);
+					obl.power = step_first->val.power;
+					sum.push_back(obl, last_node_sum);
+					last_node_sum = last_node_sum->node;
 				}
 				step_first = step_first->node;
 				step_second = step_second->node;
 			}
-			else if ((step_first != head_node) && (step_second == p.head_node))
+			else if (step_first->val.power > step_second->val.power)
 			{
-				while (step_first != head_node)
-				{
-					sum.push(step_first->val);
-					step_first = step_first->node;
-				}
+				
+				sum.push_back(step_second->val, last_node_sum);
+				step_second = step_second->node;
+				last_node_sum = last_node_sum->node;
 			}
-			else if ((step_first == head_node) && (step_second != p.head_node))
+			else if (step_first->val.power < step_second->val.power)
 			{
-				while (step_second != p.head_node)
-				{
-					sum.push(step_second->val);
-					step_second = step_second->node;
-				}
+				sum.push_back(step_first->val, last_node_sum);
+				step_first = step_first->node;
+				last_node_sum = last_node_sum->node;
 			}
-			else
-			{
-				fl = false;
-			}
+		}
+		while (step_first != head_node)
+		{
+			sum.push_back(step_first->val, last_node_sum);
+			last_node_sum = last_node_sum->node;
+			step_first = step_first->node;
+		}
+		while (step_second != p.head_node)
+		{
+			sum.push_back(step_second->val, last_node_sum);
+			last_node_sum = last_node_sum->node;
+			step_second = step_second->node;
 		}
 		return sum;
 	}

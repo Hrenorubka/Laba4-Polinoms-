@@ -8,11 +8,14 @@ If power >9, when you enter power, you get error
 
 int main(int argc, char *argv[])
 {
-	
 	string s;
+	Polinom param1;
 	cin >> s;
-	Polinom param;
-	param.create_pol(s);
-	param.print();
+	param1.create_pol(s);
+	cin >> s;
+	Polinom param2;
+	param2.create_pol(s);
+	Polinom param_sum = param1 + param2;
+	param_sum.print();
 	while (true);
 }
